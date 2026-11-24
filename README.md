@@ -14,8 +14,11 @@ scripts/
   zs_run.py           resident zero-shot scoring (5 tasks x N examples)
   zs_offload.py       same, with routed-expert streaming for checkpoints > RAM
   paired_compare.py   exact McNemar on discordant items across variants
+  ppl.py              raw-text perplexity (no chat template), optional offload
 results/
   ling-3.2-air-rco/   measured results, including the withdrawn 3.66 width
+corpora/
+  wikitext-2-test.txt pinned WikiText-2 test split (+ provenance and sha256)
 docs/
   protocol.md         the protocol, statistical rules and known pitfalls
 ```
@@ -32,6 +35,10 @@ python scripts/zs_offload.py --model <dir> --resident-fraction 0.3 \
 
 # compare on the shared items
 python scripts/paired_compare.py results/base.json results/variant.json
+
+# perplexity on the pinned corpus (streams experts if needed)
+python scripts/ppl.py --model <dir> [--resident-fraction 0.3] \
+    --out results/ppl.json
 ```
 
 Scoring core is `slq_mlx.scripts.run_zero_shot`; data lives in
@@ -63,6 +70,24 @@ Paired McNemar (shared items) against 2.75:
 Conclusions: **3.66 is a proven null** and its checkpoint was withdrawn;
 **4.62 is genuinely better**, with only ARC-Challenge surviving a Bonferroni
 correction across five tasks.
+
+## Perplexity
+
+Raw WikiText-2 test (`corpora/wikitext-2-test.txt`, pinned + sha256), fixed prefix
+of 199,902 tokens, context length 2048, no chat template, each model's own
+tokenizer.
+
+| variant | scoring | PPL | peak mem | wall |
+|---|---|---:|---:|---:|
+| 2.75 bpw | resident | 6.8909 | 44.22 GB | 291 s |
+| 4.62 bpw | offloaded @30% | **6.0239** | 26.25 GB | 1191 s |
+
+4.62 is better on both instruments, which is what makes the recommendation
+coherent rather than task-specific. Absolute values are optimistically low —
+WikiText-2 is small and widely seen in pretraining — so treat these as a
+within-family comparison, not a measure of language quality. Per-token losses
+were not retained, so no paired p-value accompanies this pair; the zero-shot
+comparison above carries the statistical weight.
 
 Offload fidelity was validated before use: 209 vs 208 of 400 correct on
 ARC-Challenge against the resident baseline, i.e. accuracy-neutral within noise.

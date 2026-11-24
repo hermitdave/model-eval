@@ -1,0 +1,14 @@
+{
+  "model": "/Users/hermit.dave/Projects/ml/models/Ling-3.2-air-MLX-RCO",
+  "corpus": "wikitext-2-test.txt",
+  "corpus_sha256": "aca2f46735043bcfd0a44eca981d04627b9cdf74c4c9a04bf0856d04066f58fc",
+  "context_length": 2048,
+  "tokens_scored": 199902,
+  "chunks": 98,
+  "ppl": 6.8909,
+  "seconds": 290.7,
+  "load_seconds": 0.6,
+  "resident_fraction": null,
+  "offload_wrapped": 0,
+  "peak_gb": 44.22
+}
